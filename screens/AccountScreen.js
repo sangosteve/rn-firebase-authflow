@@ -4,7 +4,7 @@ import {Text, View, StyleSheet} from 'react-native';
 const AccountScreen = () => {
   return (
     <View style={styles.container}>
-      <Text>AccountScreen</Text>
+      <Text>Messag</Text>
     </View>
   );
 };

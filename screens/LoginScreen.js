@@ -7,13 +7,10 @@ import {
   Alert,
   Button,
   TextInput,
+  Image,
 } from 'react-native';
-import FormButton from '../components/FormButton';
-import FormInput from '../components/FormInput';
-import SocialButton from '../components/SocialButton';
 
-import Firebase from '../config/Firebase';
-
+import Icon from 'react-native-vector-icons/Ionicons';
 import {AuthContext} from '../contexts/AuthContext';
 
 const LoginScreen = ({navigation}) => {
@@ -23,51 +20,66 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.inputField}
-        placeholderText="Enter email"
-        onChangeText={email => setEmail(email)}
-        value={email}
-      />
-      <TextInput
-        style={styles.inputField}
-        placeholderText="Enter PASSWORD"
-        onChangeText={password => setPassword(password)}
-        value={password}
-      />
+      <View style={{alignItems: 'center'}}>
+        <Image
+          style={{width: 120, height: 120}}
+          source={require('../assets/images/bg/profile-user.png')}
+        />
+        <Text style={{fontWeight: 'bold', fontSize: 30, marginTop: 18}}>
+          Welcome Back
+        </Text>
+        <Text style={{fontSize: 18, color: '#ACAEAE'}}>
+          Sign in and continue
+        </Text>
+      </View>
+
+      <View style={styles.inputWrapper}>
+        <Icon
+          name="mail-outline"
+          size={26}
+          color={'#ACAEAE'}
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.inputField}
+          placeholder="EMAIL"
+          onChangeText={email => setEmail(email)}
+          value={email}
+        />
+      </View>
+      <View style={styles.inputWrapper}>
+        <Icon
+          name="lock-closed-outline"
+          size={26}
+          color={'#ACAEAE'}
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.inputField}
+          placeholder="PASSWORD"
+          onChangeText={password => setPassword(password)}
+          value={password}
+        />
+      </View>
 
       <TouchableOpacity
         onPress={() => signIn(email, password)}
         style={{
           width: '100%',
-          backgroundColor: '#e84118',
+          backgroundColor: '#00E19E',
           height: 50,
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: 10,
-          marginTop: 30,
+          marginTop: 60,
         }}>
-        <Text>Signup</Text>
+        <Text style={{color: '#fff', fontSize: 20}}>Login</Text>
       </TouchableOpacity>
-      {/* <Button
-        title="Press Me"
-        onPress={() => sayHello('steve', 'sango')}
-        style={{
-          width: '100%',
-          backgroundColor: '#e84118',
-          height: 50,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 10,
-          marginTop: 30,
-        }}
-      /> */}
 
       <TouchableOpacity style={styles.helperLink}>
         <Text style={styles.helperLinkText}>Forgot Password?</Text>
       </TouchableOpacity>
 
-      <View
+      {/* <View
         style={{
           width: '100%',
           flexDirection: 'row',
@@ -83,7 +95,7 @@ const LoginScreen = ({navigation}) => {
           socialButtonText="Facebook"
           imgSrc={require('../assets/images/logos/logo-fb.png')}
         />
-      </View>
+      </View> */}
       <View
         style={{
           marginTop: 30,
@@ -95,7 +107,9 @@ const LoginScreen = ({navigation}) => {
         <Text style={{color: '#8395a7', fontSize: 20}}>
           Don't have an account?
         </Text>
-        <TouchableOpacity>
+        <TouchableOpacity
+          title="Signup"
+          onPress={() => navigation.navigate('Signup')}>
           <Text style={styles.helperLinkText}> Signup</Text>
         </TouchableOpacity>
       </View>
@@ -108,17 +122,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
     padding: 20,
     backgroundColor: '#fff',
   },
 
   helperLink: {
     marginTop: 30,
+    alignSelf: 'flex-end',
   },
   helperLinkText: {
     fontSize: 20,
-    color: '#e84118',
+    color: '#00E19E',
   },
 
   socialLoginSection: {
@@ -126,14 +140,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderWidth: 1,
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff',
+    width: '100%',
+    position: 'relative',
+    marginTop: 18,
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 0,
+    bottom: 10,
+  },
+
   inputField: {
     width: '100%',
     marginTop: 15,
-    height: 50,
-    borderRadius: 10,
-    backgroundColor: '#dcdde1',
-    padding: 15,
-    color: 'grey',
-    fontSize: 20,
+    color: '#ACAEAE',
+    fontSize: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ACAEAE',
+    paddingLeft: 40,
   },
 });

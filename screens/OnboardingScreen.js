@@ -2,43 +2,34 @@ import React from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 
-const Next = ({...props}) => (
-  <TouchableOpacity
-    style={{
-      width: '100%',
-      backgroundColor: '#e84118',
-      height: 50,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 10,
-      marginTop: 30,
-    }}>
-    <Text style={{color: '#fff'}}>Next</Text>
-  </TouchableOpacity>
-);
+// const Next = ({...props}) => (
+
+// );
 
 const OnboardingScreen = ({navigation}) => {
   return (
     <Onboarding
+      bottomBarColor={'#fff'}
+      showSkip={false}
+      onDone={navigation.navigate('Login')}
       pages={[
         {
-          backgroundColor: '#d4ebf2',
+          backgroundColor: '#fff',
           image: (
             <Image
               style={styles.bgImage}
-              source={require('../assets/images/bg/vector-bg1.png')}
+              source={require('../assets/images/bg/custom1.png')}
             />
           ),
           title: 'Chat',
           subtitle: 'Chat with friends',
-          titleStyles: {color: 'purple'},
         },
         {
-          backgroundColor: '#d4ebf2',
+          backgroundColor: '#fff',
           image: (
             <Image
               style={styles.bgImage}
-              source={require('../assets/images/bg/vector-bg3.png')}
+              source={require('../assets/images/bg/custom2.png')}
             />
           ),
           title: 'Share Ideas',
@@ -46,11 +37,11 @@ const OnboardingScreen = ({navigation}) => {
         },
 
         {
-          backgroundColor: '#d4ebf2',
+          backgroundColor: '#fff',
           image: (
             <Image
               style={styles.bgImage}
-              source={require('../assets/images/bg/vector-bg2.png')}
+              source={require('../assets/images/bg/custom3.png')}
             />
           ),
           title: 'Share Ideas',

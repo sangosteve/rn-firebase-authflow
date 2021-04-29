@@ -1,6 +1,7 @@
 import React, {useState, createContext, useEffect} from 'react';
 import {Alert} from 'react-native';
-import Firebase from '../config/Firebase';
+// import Firebase from '../config/Firebase';
+import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-community/async-storage';
 export const AuthContext = createContext();
 
@@ -64,14 +65,14 @@ export const AuthProvider = props => {
         signIn: async (email, password) => {
           try {
             // console.log(email, password);
-            Firebase.auth()
+            await auth()
               .signInWithEmailAndPassword(email, password)
               .then(function (user) {
                 setUser(user);
 
                 //storeAuthData(user.uid);
                 //console.log(Firebase.auth().currentUser.uid);
-                storeAuthData(Firebase.auth().currentUser.uid);
+                storeAuthData(auth().currentUser.uid);
               });
           } catch (err) {
             console.log(err);
@@ -81,14 +82,14 @@ export const AuthProvider = props => {
         signUp: async (email, password) => {
           try {
             console.log(email, password);
-            Firebase.auth().createUserWithEmailAndPassword(email, password);
+            await auth().createUserWithEmailAndPassword(email, password);
           } catch (err) {
             console.log(err);
           }
         },
 
         signOut: async () => {
-          Firebase.auth()
+          await auth()
             .signOut()
             .then(() => {
               console.log('Sign Out Sucessful');
