@@ -1,6 +1,7 @@
 import React, {useState, createContext, useEffect} from 'react';
 import {Alert} from 'react-native';
 // import Firebase from '../config/Firebase';
+import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-community/async-storage';
 export const AuthContext = createContext();
@@ -81,8 +82,25 @@ export const AuthProvider = props => {
 
         signUp: async (email, password) => {
           try {
-            console.log(email, password);
-            await auth().createUserWithEmailAndPassword(email, password);
+            // console.log(email, password);
+            await auth()
+              .createUserWithEmailAndPassword(email, password)
+              .then(() => {
+                firestore()
+                  .collection('users')
+                  .doc(auth().currentUser.uid)
+                  .set({
+                    fname: '',
+                    lname: '',
+                    email: email,
+                    about: '',
+                    phone: '',
+                    country: '',
+                    city: '',
+                    createdAt: firestore.Timestamp.fromDate(new Date()),
+                    userImg: null,
+                  });
+              });
           } catch (err) {
             console.log(err);
           }

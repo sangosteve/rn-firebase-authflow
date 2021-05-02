@@ -49,7 +49,7 @@ const HomeScreen = ({navigation}) => {
       if (loading) {
         setLoading(false);
       }
-      console.log('Posts', list);
+      // console.log('Posts', list);
     } catch (e) {
       console.log(e);
     }

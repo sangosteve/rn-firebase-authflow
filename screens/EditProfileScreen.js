@@ -1,6 +1,11 @@
 import React, {useState, useEffect, useContext} from 'react';
 import Animated from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import storage from '@react-native-firebase/storage';
+import {AuthContext} from '../contexts/AuthContext';
+import ImagePicker from 'react-native-image-crop-picker';
 import {
   Button,
   Text,
@@ -9,6 +14,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -20,44 +26,154 @@ import {
 } from '../styles/EditProfileStyles';
 import {UserNameWrapper} from '../styles/ProfileStyles';
 
-const renderContent = () => (
-  <View
-    style={{
-      width: '100%',
-      alignItems: 'center',
-      backgroundColor: '#FFF',
-      height: 300,
-    }}>
-    <Text>hey</Text>
-    <TouchableOpacity style={styles.bottomSheetButton}>
-      <Icon name="camera-outline" color="#fff" size={30} />
-      <Text style={styles.bottomSheetButtontText}>Take Photo</Text>
-    </TouchableOpacity>
-
-    <TouchableOpacity style={styles.bottomSheetButton}>
-      <Icon name="images-outline" color="#fff" size={30} />
-      <Text style={styles.bottomSheetButtontText}>Choose From Gallery</Text>
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={styles.bottomSheetButton}
-      onPress={() => sheetRef.current.snapTo(1)}>
-      <Icon name="close-outline" color="#fff" size={30} />
-      <Text style={styles.bottomSheetButtontText}>Cancel</Text>
-    </TouchableOpacity>
-  </View>
-);
-
 const EditProfileScreen = ({navigation}) => {
+  const {user, signOut} = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userData, setUserData] = useState(null);
   const sheetRef = React.useRef(null);
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [transferred, setTransferred] = useState(0);
+
+  const renderContent = () => (
+    <View
+      style={{
+        width: '100%',
+        alignItems: 'center',
+        backgroundColor: '#FFF',
+        height: 300,
+      }}>
+      <Text>hey</Text>
+      <TouchableOpacity style={styles.bottomSheetButton}>
+        <Icon name="camera-outline" color="#fff" size={30} />
+        <Text style={styles.bottomSheetButtontText}>Take Photo</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.bottomSheetButton}
+        onPress={() =>
+          ImagePicker.openPicker({
+            width: 300,
+            height: 400,
+            cropping: false,
+          }).then(selectedImage => {
+            setImage(selectedImage.path);
+            console.log(image);
+          })
+        }>
+        <Icon name="images-outline" color="#fff" size={30} />
+        <Text style={styles.bottomSheetButtontText}>Choose From Gallery</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.bottomSheetButton}
+        onPress={() => sheetRef.current.snapTo(1)}>
+        <Icon name="close-outline" color="#fff" size={30} />
+        <Text style={styles.bottomSheetButtontText}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const getUser = async () => {
+    const currentUser = await firestore()
+      .collection('users')
+      .doc(auth().currentUser.uid)
+      .get()
+      .then(documentSnapShot => {
+        if (documentSnapShot.exists) {
+          console.log('User Data:', documentSnapShot.data());
+          setUserData(documentSnapShot.data());
+        }
+      });
+  };
+
+  const handleUpdate = async () => {
+    let imgUrl = await uploadImage();
+
+    if (imgUrl == null && userData.userImg) {
+      imgUrl = userData.userImg;
+    }
+
+    //update profile
+    firestore()
+      .collection('users')
+      .doc(auth().currentUser.uid)
+      .update({
+        fname: userData.fname,
+        lname: userData.lname,
+        about: userData.about,
+        phone: userData.phone,
+        country: userData.country,
+        city: userData.city,
+        userImg: imgUrl,
+      })
+      .then(() => {
+        console.log('User Updated');
+        Alert.alert(
+          'Profile Has Been Updated',
+          'Your Profile Updated Successfully',
+        );
+      });
+  };
+
+  const uploadImage = async () => {
+    if (image == null) {
+      return null;
+    }
+    const uploadUri = image;
+    let fileName = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
+
+    //Add timestamp to filename
+    const extension = fileName.split('.').pop();
+    const name = fileName.split('.').slice(0, -1).join('.');
+    fileName = name + Date.now() + '.' + extension;
+    setUploading(true);
+    setTransferred(0);
+    const storageRef = storage().ref(`images/${fileName}`);
+    const task = storageRef.putFile(uploadUri);
+
+    task.on('state_changed', taskSnapshot => {
+      console.log(
+        `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+      );
+
+      setTransferred(
+        Math.round(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) *
+          100,
+      );
+    });
+    try {
+      // console.log('uploading file...' + fileName);
+      await task;
+      //get image url after uploading it for displaying purposes;
+      const url = storageRef.getDownloadURL();
+      setUploading(false);
+      setImage(null);
+      Alert.alert(
+        'Image uploaded successfully',
+        'Your image has been successfully uploaded to cloud storage',
+      );
+
+      //return image url
+      return url;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    console.log('Edit Post User Loading...');
+    getUser();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={{alignItems: 'center'}}>
         <TouchableOpacity onPress={() => sheetRef.current.snapTo(50)}>
           <Image
             style={{width: 80, height: 80, borderRadius: 15}}
-            source={require('../assets/images/profile_images/user1.png')}
+            source={{uri: userData ? userData.userImg : null}}
           />
         </TouchableOpacity>
         <Text style={{fontWeight: 'bold', fontSize: 20, marginTop: 18}}>
@@ -75,8 +191,8 @@ const EditProfileScreen = ({navigation}) => {
         <TextInput
           style={styles.inputField}
           placeholder="FIRSTNAME"
-          onChangeText={email => setEmail(email)}
-          value={email}
+          value={userData ? userData.fname : ''}
+          onChangeText={txt => setUserData({...userData, fname: txt})}
         />
       </View>
       <View style={styles.inputWrapper}>
@@ -89,25 +205,26 @@ const EditProfileScreen = ({navigation}) => {
         <TextInput
           style={styles.inputField}
           placeholder="LASTNAME"
-          onChangeText={email => setEmail(email)}
-          value={email}
+          onChangeText={txt => setUserData({...userData, lname: txt})}
+          value={userData ? userData.lname : ''}
         />
       </View>
 
       <View style={styles.inputWrapper}>
         <Icon
-          name="mail-outline"
+          name="person-outline"
           size={26}
           color={'#ACAEAE'}
           style={styles.inputIcon}
         />
         <TextInput
           style={styles.inputField}
-          placeholder="EMAIL"
-          onChangeText={email => setEmail(email)}
-          value={email}
+          placeholder="ABOUT"
+          onChangeText={txt => setUserData({...userData, about: txt})}
+          value={userData ? userData.about : ''}
         />
       </View>
+
       <View style={styles.inputWrapper}>
         <Icon
           name="call-outline"
@@ -118,8 +235,8 @@ const EditProfileScreen = ({navigation}) => {
         <TextInput
           style={styles.inputField}
           placeholder="PHONE"
-          onChangeText={password => setPassword(password)}
-          value={password}
+          onChangeText={txt => setUserData({...userData, phone: txt})}
+          value={userData ? userData.phone : ''}
         />
       </View>
       <View style={styles.inputWrapper}>
@@ -129,10 +246,29 @@ const EditProfileScreen = ({navigation}) => {
           color={'#ACAEAE'}
           style={styles.inputIcon}
         />
-        <TextInput style={styles.inputField} placeholder="COUNTRY" />
+        <TextInput
+          style={styles.inputField}
+          placeholder="COUNTRY"
+          onChangeText={txt => setUserData({...userData, country: txt})}
+          value={userData ? userData.country : ''}
+        />
+      </View>
+      <View style={styles.inputWrapper}>
+        <Icon
+          name="location-outline"
+          size={26}
+          color={'#ACAEAE'}
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.inputField}
+          placeholder="CITY"
+          onChangeText={txt => setUserData({...userData, city: txt})}
+          value={userData ? userData.city : ''}
+        />
       </View>
       <TouchableOpacity
-        onPress={() => signUp(email, password)}
+        onPress={handleUpdate}
         style={{
           width: '100%',
           backgroundColor: '#00E19E',
@@ -141,7 +277,7 @@ const EditProfileScreen = ({navigation}) => {
           justifyContent: 'center',
           marginTop: 30,
         }}>
-        <Text style={{color: '#fff', fontSize: 20}}>Submit</Text>
+        <Text style={{color: '#fff', fontSize: 20}}>Update</Text>
       </TouchableOpacity>
 
       <BottomSheet
@@ -176,7 +312,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: '100%',
     position: 'relative',
-    marginTop: 18,
+    marginTop: 5,
   },
   inputIcon: {
     position: 'absolute',

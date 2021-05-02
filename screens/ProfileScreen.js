@@ -34,6 +34,7 @@ const ProfileScreen = ({navigation, route}) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const handleDelete = () => {};
 
@@ -75,13 +76,27 @@ const ProfileScreen = ({navigation, route}) => {
       if (loading) {
         setLoading(false);
       }
-      console.log('Posts', list);
+      // console.log('Posts', list);
     } catch (e) {
       console.log(e);
     }
   };
 
+  const getUser = async () => {
+    await firestore()
+      .collection('users')
+      .doc(auth().currentUser.uid)
+      .get()
+      .then(documentSnapShot => {
+        if (documentSnapShot.exists) {
+          console.log('User Data:', documentSnapShot.data());
+          setUserData(documentSnapShot.data());
+        }
+      });
+  };
+
   useEffect(() => {
+    getUser();
     fetchPosts();
   }, []);
 
@@ -90,7 +105,7 @@ const ProfileScreen = ({navigation, route}) => {
       <HeaderWrapper>
         <UserNameWrapper>
           <Image
-            source={require('../assets/images/profile_images/user2.jpg')}
+            source={{uri: userData ? userData.userImg : null}}
             style={{
               width: 70,
               height: 70,
@@ -98,9 +113,9 @@ const ProfileScreen = ({navigation, route}) => {
               borderRadius: 35,
             }}
           />
-          <UserNameText>John Doe</UserNameText>
+          <UserNameText>{userData ? userData.fname : ''}</UserNameText>
 
-          <UserStatusText>The World's Okayest Developer</UserStatusText>
+          <UserStatusText>{userData ? userData.about : ''}</UserStatusText>
         </UserNameWrapper>
 
         <InteractionWrapper>
@@ -126,7 +141,7 @@ const ProfileScreen = ({navigation, route}) => {
 
       <UserStatsWrapper>
         <PostStats>
-          <PostStatsCount>500</PostStatsCount>
+          <PostStatsCount>{posts.length}</PostStatsCount>
           <PostStatsText>Posts</PostStatsText>
         </PostStats>
 
