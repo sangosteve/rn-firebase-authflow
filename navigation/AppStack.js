@@ -28,20 +28,20 @@ const FeedStack = ({navigation}) => (
         headerShown: false,
       }}
     />
-    <Stack.Screen
+    {/* <Stack.Screen
       name="AddPost"
       component={AddPostScreen}
       options={{
         title: '',
         headerTitleAlign: 'center',
         headerStyle: {
-          backgroundColor: '#2e64e515',
-          shadowColor: '#2e64e515',
+          backgroundColor: '#f0f8ff',
+          shadowColor: '#f0f8ff',
           elevation: 0,
         },
         headerBackTitleVisible: false,
       }}
-    />
+    /> */}
     <Stack.Screen
       name="HomeProfile"
       component={ProfileScreen}
@@ -65,7 +65,7 @@ const ProfileStack = ({navigation}) => (
       name="Profile"
       component={ProfileScreen}
       options={{
-        headerShown: true,
+        headerShown: false,
       }}
     />
     <Stack.Screen
@@ -89,7 +89,7 @@ const AppStack = ({navigation}) => (
     <Tabs.Navigator
       initialRouteName="Home"
       tabBarOptions={{
-        activeTintColor: '#122c91',
+        activeTintColor: '#1DA1F2',
       }}
       screenOptions={{
         headerTitleAlign: 'center',
@@ -125,6 +125,21 @@ const AppStack = ({navigation}) => (
         name="AddPost"
         component={AddPostScreen}
         options={{
+          headerShown: true,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: '#2e64e515',
+            shadowColor: '#2e64e515',
+            elevation: 0,
+          },
+          headerRight: () => (
+            <Button
+              onPress={() => alert('This is a button!')}
+              title="Info"
+              color="#fff"
+            />
+          ),
+          headerBackTitleVisible: false,
           tabBarLabel: '',
           // tabBarIcon: ({color, size}) => (
           //   <Icon name="plus" color={color} size={size} />
@@ -135,7 +150,7 @@ const AppStack = ({navigation}) => (
               style={{
                 width: 56,
                 height: 56,
-                backgroundColor: '#3867d6',
+                backgroundColor: '#1DA1F2',
                 borderRadius: 28,
                 alignItems: 'center',
                 justifyContent: 'center',

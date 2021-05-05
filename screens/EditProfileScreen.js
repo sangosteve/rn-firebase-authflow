@@ -15,6 +15,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -168,7 +169,7 @@ const EditProfileScreen = ({navigation}) => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={{alignItems: 'center'}}>
         <TouchableOpacity onPress={() => sheetRef.current.snapTo(50)}>
           <Image
@@ -177,7 +178,7 @@ const EditProfileScreen = ({navigation}) => {
           />
         </TouchableOpacity>
         <Text style={{fontWeight: 'bold', fontSize: 20, marginTop: 18}}>
-          Jhon Doe
+          {userData ? userData.fname : ''} {''} {userData ? userData.lname : ''}
         </Text>
       </View>
 
@@ -271,7 +272,7 @@ const EditProfileScreen = ({navigation}) => {
         onPress={handleUpdate}
         style={{
           width: '100%',
-          backgroundColor: '#00E19E',
+          backgroundColor: '#1DA1F2',
           height: 50,
           alignItems: 'center',
           justifyContent: 'center',
@@ -286,14 +287,14 @@ const EditProfileScreen = ({navigation}) => {
         borderRadius={10}
         renderContent={renderContent}
       />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    // alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
   },

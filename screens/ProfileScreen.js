@@ -1,5 +1,12 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {Button, Text, View, Image, TouchableOpacity} from 'react-native';
+import {
+  Button,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
@@ -27,6 +34,9 @@ import {
   FollowingStats,
   FollowingStatsCount,
   FollowingStatsText,
+  ContentWrapper,
+  UserImage,
+  UserPostsWrapper,
 } from '../styles/ProfileStyles';
 
 const ProfileScreen = ({navigation, route}) => {
@@ -43,7 +53,11 @@ const ProfileScreen = ({navigation, route}) => {
       const list = [];
       await firestore()
         .collection('posts')
-        .where('userId', '==', auth().currentUser.uid)
+        .where(
+          'userId',
+          '==',
+          route.params ? route.params.userId : auth().currentUser.uid,
+        )
         .orderBy('postTime', 'desc')
         .get()
         .then(querySnapshot => {
@@ -85,11 +99,10 @@ const ProfileScreen = ({navigation, route}) => {
   const getUser = async () => {
     await firestore()
       .collection('users')
-      .doc(auth().currentUser.uid)
+      .doc(route.params ? route.params.userId : auth().currentUser.uid)
       .get()
       .then(documentSnapShot => {
         if (documentSnapShot.exists) {
-          console.log('User Data:', documentSnapShot.data());
           setUserData(documentSnapShot.data());
         }
       });
@@ -98,67 +111,78 @@ const ProfileScreen = ({navigation, route}) => {
   useEffect(() => {
     getUser();
     fetchPosts();
-  }, []);
+    navigation.addListener('focus', () => setLoading(!loading));
+  }, [navigation, loading]);
 
   return (
     <Container>
-      <HeaderWrapper>
-        <UserNameWrapper>
-          <Image
-            source={{uri: userData ? userData.userImg : null}}
-            style={{
-              width: 70,
-              height: 70,
-              resizeMode: 'cover',
-              borderRadius: 35,
-            }}
-          />
-          <UserNameText>{userData ? userData.fname : ''}</UserNameText>
-
-          <UserStatusText>{userData ? userData.about : ''}</UserStatusText>
-        </UserNameWrapper>
-
-        <InteractionWrapper>
-          <Button title="Logout" onPress={signOut} />
-          {route.params ? (
-            <>
-              <InteractionButtonsWrapper>
-                <MessageButton>
-                  <Icon name="mail" color="#39c4ff" size={30} />
-                </MessageButton>
-                <FollowButton>
-                  <FollowButtonText>Follow</FollowButtonText>
-                </FollowButton>
-              </InteractionButtonsWrapper>
-            </>
-          ) : (
+      <InteractionWrapper>
+        {route.params ? (
+          <>
+            <InteractionButtonsWrapper>
+              <MessageButton>
+                <Icon name="mail" color="#39c4ff" size={30} />
+              </MessageButton>
+              <FollowButton>
+                <FollowButtonText>Follow</FollowButtonText>
+              </FollowButton>
+            </InteractionButtonsWrapper>
+          </>
+        ) : (
+          <View>
             <EditButton onPress={() => navigation.navigate('EditProfile')}>
-              <Icon name="edit-3" color="#39C4FF" size={40} />
+              <Icon name="settings" color="#FFF" size={30} />
             </EditButton>
-          )}
-        </InteractionWrapper>
-      </HeaderWrapper>
+            <Button title="Logout" onPress={signOut} />
+          </View>
+        )}
+      </InteractionWrapper>
+      <ContentWrapper>
+        <HeaderWrapper>
+          <UserNameWrapper>
+            <UserImage source={{uri: userData ? userData.userImg : null}} />
+            <UserNameText>
+              {userData ? userData.fname : ''} {''}{' '}
+              {userData ? userData.lname : ''}
+            </UserNameText>
 
-      <UserStatsWrapper>
-        <PostStats>
-          <PostStatsCount>{posts.length}</PostStatsCount>
-          <PostStatsText>Posts</PostStatsText>
-        </PostStats>
+            <UserStatusText>{userData ? userData.about : ''}</UserStatusText>
+          </UserNameWrapper>
+        </HeaderWrapper>
 
-        <FollowersStats>
-          <FollowersStatsCount>1350</FollowersStatsCount>
-          <FollowersStatsText>Followers</FollowersStatsText>
-        </FollowersStats>
+        <UserStatsWrapper>
+          <PostStats>
+            <PostStatsCount>{posts.length}</PostStatsCount>
+            <PostStatsText>Posts</PostStatsText>
+          </PostStats>
 
-        <FollowingStats>
-          <FollowingStatsCount>2130</FollowingStatsCount>
-          <FollowingStatsText>Following</FollowingStatsText>
-        </FollowingStats>
-      </UserStatsWrapper>
+          <FollowersStats>
+            <FollowersStatsCount>1350</FollowersStatsCount>
+            <FollowersStatsText>Followers</FollowersStatsText>
+          </FollowersStats>
 
-      {posts.map(item => (
-        <PostCard key={item.id} item={item} onDelete={handleDelete} />
-      ))}
+          <FollowingStats>
+            <FollowingStatsCount>2130</FollowingStatsCount>
+            <FollowingStatsText>Following</FollowingStatsText>
+          </FollowingStats>
+        </UserStatsWrapper>
+        <UserPostsWrapper>
+          <FlatList
+            style={{width: '100%'}}
+            data={posts}
+            renderItem={({item}) => (
+              <PostCard
+                item={item}
+                onDelete={handleDelete}
+                onPress={() =>
+                  navigation.navigate('HomeProfile', {userId: item.userId})
+                }
+              />
+            )}
+            keyExtractor={item => item.id}
+          />
+        </UserPostsWrapper>
+      </ContentWrapper>
     </Container>
   );
 };

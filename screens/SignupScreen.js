@@ -68,7 +68,7 @@ const SignupScreen = ({navigation}) => {
         onPress={() => signUp(email, password)}
         style={{
           width: '100%',
-          backgroundColor: '#00E19E',
+          backgroundColor: '#0984e3',
           height: 50,
           alignItems: 'center',
           justifyContent: 'center',
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   helperLinkText: {
     fontSize: 20,
-    color: '#00E19E',
+    color: '#0984e3',
   },
   inputWrapper: {
     flexDirection: 'row',
